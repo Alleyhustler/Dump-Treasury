@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dump Treasury - Redistributing Exit Damage</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,100..700;1,100..700&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: #0a0a0a;
+              font-family: "Roboto Mono", monospace;
+
+            color: #e0e0e0;
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+.background-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(180deg, rgba(10,10,10,0.95) 0%, rgba(10,10,10,0.85) 100%), url('as.jpg') center/cover; z-index: -1; }
+        .grain {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('data:image/svg+xml,%3Csvg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"%3E%3Cfilter id="noise"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" stitchTiles="stitch"/%3E%3C/filter%3E%3Crect width="100%25" height="100%25" filter="url(%23noise)" opacity="0.05"/%3E%3C/svg%3E');
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0.3;
+        }
+
+        header {
+            position: relative;
+            padding: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            z-index: 10;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+.logo { width: 50px; height: 50px; background: url('logo.png') center/contain no-repeat; border: 2px solid #dccdbd; border-radius: 4px; }
+
+        .twitter-link {
+            color: #dccdbd;
+            text-decoration: none;
+            font-size: 0.9rem;
+            padding: 0.5rem 1rem;
+            border: 1px solid #dccdbd;
+            transition: all 0.3s;
+        }
+
+        .twitter-link:hover {
+            background: rgba(0,255,136,0.1);
+        }
+
+        .connect-wallet-btn {
+            background: transparent;
+            color: #dccdbd;
+            border: 2px solid #dccdbd;
+            padding: 0.75rem 1.5rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .connect-wallet-btn:hover {
+            background: #dccdbd;
+            color: #0a0a0a;
+            box-shadow: 0 0 20px rgba(0,255,136,0.3);
+        }
+
+        .hero {
+            text-align: center;
+            padding: 4rem 2rem 2rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 3.5rem;
+            font-weight: 300;
+            letter-spacing: 4px;
+            margin-bottom: 1rem;
+            color: #fff;
+            text-transform: uppercase;
+        }
+
+        .subline {
+            font-size: 1.2rem;
+            color: #dccdbd;
+            font-style: italic;
+            margin-bottom: 3rem;
+            opacity: 0.9;
+        }
+
+        .mechanism-section {
+            max-width: 900px;
+            margin: 4rem auto;
+            padding: 0 2rem;
+        }
+
+        .mechanism-title {
+            text-align: center;
+            font-size: 2rem;
+            color: #fff;
+            margin-bottom: 3rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .steps-container {
+            position: relative;
+            min-height: 400px;
+        }
+
+        .step {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s ease;
+            margin-bottom: 3rem;
+            padding: 2rem;
+            background: rgba(255, 187, 0, 0.03);
+            border-left: 3px solid #dccdbd;
+        }
+
+        .step.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .step-number {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            background: #dccdbd;
+            color: #0a0a0a;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 40px;
+            font-weight: bold;
+            margin-bottom: 1rem;
+        }
+
+        .step-title {
+            font-size: 1.5rem;
+            color: #fff;
+            margin-bottom: 0.5rem;
+        }
+
+        .step-description {
+            color: #b0b0b0;
+            font-size: 1rem;
+            line-height: 1.8;
+        }
+
+        .how-it-works {
+            max-width: 800px;
+            margin: 6rem auto;
+            padding: 3rem 2rem;
+            background: rgba(0,0,0,0.5);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .how-it-works h2 {
+            font-size: 2rem;
+            color: #fff;
+            margin-bottom: 2rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-align: center;
+        }
+
+        .how-it-works p {
+            color: #b0b0b0;
+            font-size: 1.1rem;
+            line-height: 2;
+            margin-bottom: 1rem;
+        }
+
+        .join-union-btn {
+            display: block;
+            margin: 3rem auto 0;
+            background: #dccdbd;
+            color: #0a0a0a;
+            border: none;
+            padding: 1rem 3rem;
+            font-family: 'Courier New', monospace;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.3s;
+        }
+
+        .join-union-btn:hover {
+            box-shadow: 0 0 30px rgba(0,255,136,0.5);
+            transform: scale(1.05);
+        }
+
+        .union-status {
+            max-width: 600px;
+            margin: 3rem auto;
+            padding: 2rem;
+            background: rgba(0,255,136,0.05);
+            border: 2px solid #dccdbd;
+            text-align: center;
+            display: none;
+        }
+
+        .union-status.show {
+            display: block;
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .wallet-address {
+            font-size: 1.2rem;
+            color: #dccdbd;
+            margin-bottom: 1rem;
+            word-break: break-all;
+        }
+
+        .status-label {
+            font-size: 0.9rem;
+            color: #888;
+            margin-bottom: 0.5rem;
+        }
+
+        .status-value {
+            font-size: 1.3rem;
+            color: #fff;
+            font-weight: bold;
+        }
+
+        .last-event {
+            text-align: center;
+            padding: 2rem;
+            color: #666;
+            font-size: 0.9rem;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            margin-top: 4rem;
+        }
+
+        .last-event span {
+            color: #dccdbd;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #1a1a1a;
+            padding: 3rem;
+            border: 2px solid #dccdbd;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+        }
+
+        .modal-content h3 {
+            color: #fff;
+            margin-bottom: 2rem;
+            font-size: 1.5rem;
+        }
+
+        .wallet-option {
+            background: rgba(0,255,136,0.1);
+            border: 1px solid #dccdbd;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .wallet-option:hover {
+            background: rgba(0,255,136,0.2);
+        }
+
+        .wallet-option.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .close-modal {
+            margin-top: 2rem;
+            background: transparent;
+            color: #888;
+            border: 1px solid #444;
+            padding: 0.5rem 2rem;
+            font-family: 'Courier New', monospace;
+            cursor: pointer;
+        }
+
+        .error-message {
+            color: #ff6b6b;
+            font-size: 0.9rem;
+            margin-top: 1rem;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+
+            .subline {
+                font-size: 1rem;
+            }
+
+            header {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .step {
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="background-overlay"></div>
+    <div class="grain"></div>
+
+    <header>
+        <div class="logo-section">
+            <div class="logo"></div>
+            <a href="https://x.com/DumpTreasury" target="_blank" class="twitter-link">@DumpTreasury</a>
+        </div>
+        <button class="connect-wallet-btn" id="connectBtn">Connect Wallet</button>
+    </header>
+
+    <main>
+        <div class="hero">
+            <h1>Dump Treasury</h1>
+            <p class="subline">"Reunion of fishes trying to cancel the whales"</p>
+        </div>
+
+        <section class="mechanism-section">
+            <h2 class="mechanism-title">The Treasury Mechanism</h2>
+            <div class="steps-container" id="stepsContainer">
+                <div class="step" data-step="1">
+                    <div class="step-number">1</div>
+                    <h3 class="step-title">Whale Exit Detected</h3>
+                    <p class="step-description">A major holder exits their position. The blockchain registers the transaction as it propagates through the network, triggering the treasury monitoring protocol.</p>
+                </div>
+
+                <div class="step" data-step="2">
+                    <div class="step-number">2</div>
+                    <h3 class="step-title">Treasury Captures Tax</h3>
+                    <p class="step-description">A small, calculated tax is automatically extracted from the exit transaction. This fee is deposited directly into the Dump Treasury smart contract, ready for redistribution.</p>
+                </div>
+
+                <div class="step" data-step="3">
+                    <div class="step-number">3</div>
+                    <h3 class="step-title">Proportional Rebate Distributed</h3>
+                    <p class="step-description">All verified small holders—wallets under the defined threshold—automatically receive a proportional rebate. The distribution is instant, fair, and algorithmic.</p>
+                </div>
+
+                <div class="step" data-step="4">
+                    <div class="step-number">4</div>
+                    <h3 class="step-title">Treasury Resets</h3>
+                    <p class="step-description">The Dump Treasury completes the cycle and returns to monitoring state. The system stands ready, waiting for the next whale exit to trigger the next redistribution event.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="how-it-works">
+            <h2>How It Works</h2>
+            <p>Dump Treasury monitors sell pressure across participating tokens.</p>
+            <p>When a major exit is detected, the treasury triggers redistribution.</p>
+            <p>Wallets under a defined threshold automatically receive a rebate.</p>
+            <p><strong>No applications. No claims. Just redistribution.</strong></p>
+            <button class="join-union-btn" id="joinBtn">Join The Union</button>
+        </section>
+
+        <div class="union-status" id="unionStatus">
+            <div class="wallet-address" id="walletAddress">Wallet connected: 0x0000...0000</div>
+            <div class="status-label">Union Status:</div>
+            <div class="status-value" id="statusValue">Pending Verification</div>
+        </div>
+
+        <div class="last-event">
+            Last Rebate Event: <span id="lastEvent">Calculating...</span>
+        </div>
+    </main>
+
+    <div class="modal" id="walletModal">
+        <div class="modal-content">
+            <h3>Connect Solana Wallet</h3>
+            <div class="wallet-option" data-wallet="phantom">
+                <strong>Phantom</strong>
+            </div>
+            <div class="wallet-option" data-wallet="solflare">
+                <strong>Solflare</strong>
+            </div>
+            <div class="wallet-option" data-wallet="backpack">
+                <strong>Backpack</strong>
+            </div>
+            <div class="error-message" id="errorMessage">Wallet not found. Please install the wallet extension.</div>
+            <button class="close-modal" id="closeModal">Cancel</button>
+        </div>
+    </div>
+
+    <script>
+        // State
+        let walletConnected = false;
+        let currentStep = 0;
+        let connectedWallet = null;
+        let walletPublicKey = null;
+
+        // Elements
+        const connectBtn = document.getElementById('connectBtn');
+        const joinBtn = document.getElementById('joinBtn');
+        const walletModal = document.getElementById('walletModal');
+        const closeModal = document.getElementById('closeModal');
+        const unionStatus = document.getElementById('unionStatus');
+        const walletAddress = document.getElementById('walletAddress');
+        const statusValue = document.getElementById('statusValue');
+        const lastEvent = document.getElementById('lastEvent');
+        const steps = document.querySelectorAll('.step');
+        const errorMessage = document.getElementById('errorMessage');
+
+        // Format wallet address
+        function formatAddress(address) {
+            if (!address) return '';
+            return `${address.slice(0, 4)}...${address.slice(-4)}`;
+        }
+
+        // Generate timestamp
+        function generateTimestamp() {
+            const now = new Date();
+            const hours = now.getHours().toString().padStart(2, '0');
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            const seconds = now.getSeconds().toString().padStart(2, '0');
+            return `${hours}:${minutes}:${seconds} UTC`;
+        }
+
+        // Update last event periodically
+        function updateLastEvent() {
+            const randomMinutes = Math.floor(Math.random() * 120) + 5;
+            lastEvent.textContent = `${randomMinutes} minutes ago (${generateTimestamp()})`;
+        }
+
+        // Step animation
+        function showNextStep() {
+            if (currentStep < steps.length) {
+                steps[currentStep].classList.add('active');
+                currentStep++;
+                setTimeout(showNextStep, 2000);
+            }
+        }
+
+        // Connect to Phantom wallet
+        async function connectPhantom() {
+            try {
+                if (!window.solana || !window.solana.isPhantom) {
+                    throw new Error('Phantom wallet not found');
+                }
+                
+                const response = await window.solana.connect();
+                walletPublicKey = response.publicKey.toString();
+                return { success: true, address: walletPublicKey };
+            } catch (error) {
+                console.error('Phantom connection error:', error);
+                return { success: false, error: error.message };
+            }
+        }
+
+        // Connect to Solflare wallet
+        async function connectSolflare() {
+            try {
+                if (!window.solflare) {
+                    throw new Error('Solflare wallet not found');
+                }
+                
+                await window.solflare.connect();
+                walletPublicKey = window.solflare.publicKey.toString();
+                return { success: true, address: walletPublicKey };
+            } catch (error) {
+                console.error('Solflare connection error:', error);
+                return { success: false, error: error.message };
+            }
+        }
+
+        // Connect to Backpack wallet
+        async function connectBackpack() {
+            try {
+                if (!window.backpack) {
+                    throw new Error('Backpack wallet not found');
+                }
+                
+                const response = await window.backpack.connect();
+                walletPublicKey = response.publicKey.toString();
+                return { success: true, address: walletPublicKey };
+            } catch (error) {
+                console.error('Backpack connection error:', error);
+                return { success: false, error: error.message };
+            }
+        }
+
+        // Disconnect wallet
+        async function disconnectWallet() {
+            try {
+                if (connectedWallet === 'phantom' && window.solana) {
+                    await window.solana.disconnect();
+                } else if (connectedWallet === 'solflare' && window.solflare) {
+                    await window.solflare.disconnect();
+                } else if (connectedWallet === 'backpack' && window.backpack) {
+                    await window.backpack.disconnect();
+                }
+            } catch (error) {
+                console.error('Disconnect error:', error);
+            }
+            
+            walletConnected = false;
+            connectedWallet = null;
+            walletPublicKey = null;
+            connectBtn.textContent = 'Connect Wallet';
+            unionStatus.classList.remove('show');
+        }
+
+        // Connect wallet button
+        connectBtn.addEventListener('click', () => {
+            if (walletConnected) {
+                disconnectWallet();
+            } else {
+                walletModal.classList.add('show');
+                errorMessage.classList.remove('show');
+            }
+        });
+
+        // Wallet options
+        document.querySelectorAll('.wallet-option').forEach(option => {
+            option.addEventListener('click', async function() {
+                const wallet = this.getAttribute('data-wallet');
+                errorMessage.classList.remove('show');
+                
+                let result;
+                if (wallet === 'phantom') {
+                    result = await connectPhantom();
+                } else if (wallet === 'solflare') {
+                    result = await connectSolflare();
+                } else if (wallet === 'backpack') {
+                    result = await connectBackpack();
+                }
+
+                if (result.success) {
+                    walletModal.classList.remove('show');
+                    walletConnected = true;
+                    connectedWallet = wallet;
+                    connectBtn.textContent = 'Disconnect';
+                    walletAddress.textContent = `Wallet connected: ${formatAddress(result.address)}`;
+                } else {
+                    errorMessage.textContent = result.error || 'Wallet not found. Please install the wallet extension.';
+                    errorMessage.classList.add('show');
+                }
+            });
+        });
+
+        // Close modal
+        closeModal.addEventListener('click', () => {
+            walletModal.classList.remove('show');
+            errorMessage.classList.remove('show');
+        });
+
+        // Join union
+        joinBtn.addEventListener('click', () => {
+            if (!walletConnected) {
+                walletModal.classList.add('show');
+                return;
+            }
+
+            unionStatus.classList.add('show');
+            statusValue.textContent = 'Pending Verification';
+            statusValue.style.color = '#ffa500';
+
+            // Clear any existing message
+            const existingMessage = unionStatus.querySelector('p');
+            if (existingMessage) {
+                existingMessage.remove();
+            }
+
+            setTimeout(() => {
+                statusValue.textContent = 'Verified Small Holder';
+                statusValue.style.color = '#dccdbd';
+                
+                const message = document.createElement('p');
+                message.style.color = '#b0b0b0';
+                message.style.marginTop = '1rem';
+                message.style.fontSize = '0.9rem';
+                message.textContent = 'You will now receive proportional rebates during next whale exits.';
+                unionStatus.appendChild(message);
+            }, 3000);
+        });
+
+        // Listen for wallet account changes
+        if (window.solana) {
+            window.solana.on('accountChanged', (publicKey) => {
+                if (publicKey && walletConnected && connectedWallet === 'phantom') {
+                    walletPublicKey = publicKey.toString();
+                    walletAddress.textContent = `Wallet connected: ${formatAddress(walletPublicKey)}`;
+                } else {
+                    disconnectWallet();
+                }
+            });
+        }
+
+        // Initialize
+        setTimeout(showNextStep, 500);
+        updateLastEvent();
+        setInterval(updateLastEvent, 30000);
+    </script>
+</body>
+</html>
